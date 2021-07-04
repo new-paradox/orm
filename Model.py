@@ -19,32 +19,40 @@ class DBConfigSettings(BaseDBSettings):
         self.db_name = config.DB_NAME
 
 
+class Driver:
+    def __init__(self, db_setting: DBConfigSettings):
+        self.setting = db_setting
+        self.connection = psycopg2.connect(
+            f"dbname={self.setting.db_name} user={self.setting.user} password={self.setting.password}")
+        self.__cursor = self.connection.cursor()
+
+    def __del__(self, instance):
+        self.connection.close()
+
+
 class Model:
 
-    def __init__(self, db_settings: BaseDBSettings):
-        self._settings = db_settings
-        self._connection = psycopg2.connect(dbname=f"{self._settings.db_name}",
-                                            user=f"{self._settings.user}",
-                                            password=f"{self._settings.password}")
-        self.__cursor = self._connection.cursor()
-
-    def close_connection(self):
-        self._connection.close()
+    def __init__(self, db_driver: Driver):
+        self.__cursor = db_driver.connection.cursor()
 
     id: int
     __TABLE_NAME = str
 
-    def create(self, **kvargs) -> Dict:
+    def create(self, **args) -> Dict:
         data_array = []
-        query = f"INSERT INTO {config.DB_NAME}.{self.__TABLE_NAME} SET "
-        for key, value in kvargs:
-            data_array.append(f"{key} = '{value}'")
-        sql_query = query + ", ".join(data_array)
-        """Почитай про подготовленные выражения в Postgres"""
+        print(args)
+        keys = ', '.join([key for key in args.keys()])
+        values = ', '.join([str(val) for val in args.values()])
+        query = f"INSERT INTO {config.DB_NAME}.{self.__TABLE_NAME} {keys} VALUES "
+        data_array.append(f"{values}")
+        sql_query = query + ", ".join(data_array) + ';'
         return self.__cursor.execute(sql_query)
 
-    def read(self):
-        query = f"SELECT * FROM {config.DB_NAME}.{self.__TABLE_NAME} BY id = '{self.id}' "
+    def read(self, **kvargs) -> Dict:
+        key, value = kvargs
+        data_array = []
+        query = f"SELECT * FROM {config.DB_NAME}.{self.__TABLE_NAME} WHERE {key} = {value};"
+        return self.__cursor.execute(query)
 
     def update(self):
         pass
@@ -53,4 +61,10 @@ class Model:
         pass
 
     def create_table(self):
+        pass
+
+    def delete_table(self):
+        pass
+
+    def alter_table(self):
         pass
