@@ -5,6 +5,7 @@ import config
 import psycopg2
 
 
+# TODO: BaseDBSettings & DBConfigSettings в датаклассы
 class BaseDBSettings:
     host: str
     user: str
@@ -33,7 +34,7 @@ class Driver(DBConfigSettings):
 
 class Model(Driver):
     _table: str
-
+    _Property: object
     _instance = None
 
     def __new__(cls, *args, **kwargs):
@@ -41,36 +42,44 @@ class Model(Driver):
             cls._instance = object.__new__(cls, *args, **kwargs)
         return cls._instance
 
-    def create(self, *args) -> Dict:
-        data_array = []
+    def __setitem__(self, key, value):
+        pass
 
-        # keys = ', '.join([key for key in args])
-        # values = ', '.join([val for val in self])
-        a4 = ("Model.__dict__:", self.__dict__)
-        values = 'bar'
-        query = f"INSERT INTO {config.DB_NAME}.{self._table} {args} VALUES "
-        # data_array.append(f"{values}")
-        sql_query = query + ", ".join(data_array) + ';'
-        # print(sql_query)
-        return self.__cursor.execute(sql_query)
+    def create(self):
+        values = []
+        args = [key for key in dir(self._Property)
+                if not key.startswith('__')
+                and not callable(getattr(self._Property, key))
+                ]
+        for i in args:
+            values.append(getattr(self._Property, i))
+        prepare_key = f"({', '.join(args)})"
+        prepare_values = tuple(values)
+        query = f"INSERT INTO {config.DB_NAME}.{self._table} {prepare_key} VALUES {prepare_values};"
+        print(query)
+        return self.__cursor.execute(query)
 
-    # def read(self, **kvargs) -> Dict:
-    #     key, value = kvargs
-    #     data_array = []
-    #     query = f"SELECT * FROM {config.DB_NAME}.{self.__table} WHERE {key} = {value};"
-    #     return self.__cursor.execute(query)
+# INSERT INTO greetings(gname) VALUES('{hello}')
+# cur.execute(sql, ("{{{}}}".format(line.rstrip()),))
 
-    # def update(self):
-    #     pass
-    #
-    # def delete(self):
-    #     pass
-    #
-    # def create_table(self):
-    #     pass
-    #
-    # def delete_table(self):
-    #     pass
-    #
-    # def alter_table(self):
-    #     pass
+
+# def read(self, **kvargs) -> Dict:
+#     key, value = kvargs
+#     data_array = []
+#     query = f"SELECT * FROM {config.DB_NAME}.{self.__table} WHERE {key} = {value};"
+#     return self.__cursor.execute(query)
+
+# def update(self):
+#     pass
+#
+# def delete(self):
+#     pass
+#
+# def create_table(self):
+#     pass
+#
+# def delete_table(self):
+#     pass
+#
+# def alter_table(self):
+#     pass
