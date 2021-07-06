@@ -22,6 +22,6 @@ class Model(DBConnectSettings, metaclass=Singleton):
     def create(self):
         prepare_key = f"({', '.join(self.keys)})"
         prepare_values = str(tuple(self.Values))
-        query = f"INSERT INTO {self.db_name}.public.{self.__table_name.lower()} {prepare_key} VALUES {prepare_values};"
-        print(query)
-        return print(self._cursor.execute(query))
+        query = f"INSERT INTO {self.__table_name.lower()} {prepare_key} VALUES {prepare_values};"
+        # self._cursor.execute(query)
+        return self._cursor.execute(query)

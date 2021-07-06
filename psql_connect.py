@@ -20,6 +20,6 @@ class DBConnectSettings(BaseDBSettings):
                                             password=f"{self.password}")
         self._cursor = self._connection.cursor()
 
-    def close_connection(self):
+    def __del__(self):
         self._connection.close()
 
