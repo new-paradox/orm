@@ -1,16 +1,27 @@
+# -*- coding: utf-8 -*-
+
 from models.Article import Article
+from Conditions import QFilter, EQ
 
 
 # @route("POST", "/new_article")
-def get_article(flow):
-    new_row = Article()
-    new_row['id'] = flow['id']
-    new_row['title'] = flow['title']
-    new_row['description'] = flow['description']
-    new_row['content'] = flow['content']
-    new_row.create()
+def add_article(flow):
+    row = Article()
+    row['id'] = flow['id']
+    row['title'] = flow['title']
+    row['description'] = flow['description']
+    row['content'] = flow['content']
+    row.create()
+
+
+def get_article():
+    row = Article()
+    # row.condition = QFilter(EQ('id', 45), EQ('title', 'bar'))
+    condition = str(QFilter(EQ('id', 45)))
+    data = row.read()
+    print(data)
 
 
 if __name__ == '__main__':
-    flow = {'id': 1, 'title': 'bar', 'description': 'foo', 'content': 'FOO'}
-    query = get_article(flow)
+    flow = {'id': 45, 'content': 'FOO'}
+    get_article()
