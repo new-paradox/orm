@@ -21,5 +21,5 @@ class DBConnectSettings(BaseDBSettings):
         self._cursor = self._connection.cursor()
 
     def __del__(self):
+        self._connection.commit()
         self._connection.close()
-

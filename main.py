@@ -1,5 +1,6 @@
 from models.Article import Article
 
+
 # @route("POST", "/new_article")
 def get_article(flow):
     new_row = Article()
@@ -13,4 +14,3 @@ def get_article(flow):
 if __name__ == '__main__':
     flow = {'id': 1, 'title': 'bar', 'description': 'foo', 'content': 'FOO'}
     query = get_article(flow)
-

@@ -4,6 +4,7 @@ from psql_connect import DBConnectSettings
 class Singleton(type):
     _instances = {}
     _table_name = str
+
     def __call__(cls, *args, **kwargs):
         if cls not in cls._instances:
             cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
@@ -11,7 +12,6 @@ class Singleton(type):
 
 
 class Model(DBConnectSettings, metaclass=Singleton):
-
     keys = []
     Values = []
 
