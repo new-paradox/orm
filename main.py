@@ -1,18 +1,16 @@
-from Model import Driver, DBConfigSettings
 from models.Article import Article
 
-
 # @route("POST", "/new_article")
-def new_article(flow):
-    new_article = Article(Driver(DBConfigSettings()))
-
-    new_article.title = flow['title']
-    new_article.description = flow['description']
-    new_article.content = flow['content']
-
-    new_article.create()
+def get_article(flow):
+    new_row = Article()
+    new_row['id'] = flow['id']
+    new_row['title'] = flow['title']
+    new_row['description'] = flow['description']
+    new_row['content'] = flow['content']
+    new_row.create()
 
 
 if __name__ == '__main__':
-    flow = {'title': 'zopa', 'description': 'foo', 'content': 'FOO'}
-    new_article(flow)
+    flow = {'id': 1, 'title': 'bar', 'description': 'foo', 'content': 'FOO'}
+    query = get_article(flow)
+
