@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+
+from typing import Optional
+
 from psql_connect import DBConnectSettings
 
 
@@ -14,6 +18,7 @@ class Singleton(type):
 class Model(DBConnectSettings, metaclass=Singleton):
     keys = []
     Values = []
+    condition = ''
 
     def __setitem__(self, key, value):
         self.keys.append(key)
@@ -24,3 +29,23 @@ class Model(DBConnectSettings, metaclass=Singleton):
         prepare_values = str(tuple(self.Values))
         query = f"INSERT INTO {self._table_name.lower()} {prepare_key} VALUES {prepare_values};"
         return self._cursor.execute(query)
+
+    def read(self):
+        query = f"SELECT * FROM {self._table_name.lower()} {self.condition};"
+        self._cursor.execute(query)
+        return self._cursor.fetchone()
+
+    def update(self):
+        pass
+
+    def delete(self):
+        pass
+
+    def create_table(self):
+        pass
+
+    def delete_table(self):
+        pass
+
+    def alter_table(self):
+        pass

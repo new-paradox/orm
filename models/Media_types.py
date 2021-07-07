@@ -1,4 +1,6 @@
-from Model import Model, BaseDBSettings, DBConfigSettings
+# -*- coding: utf-8 -*-
+
+from Model import Model
 
 
 class MediaType(Model):

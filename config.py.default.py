@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 HOST = "HOST"
 USER = "USER"
 PASSWORD = "PASSWORD"
