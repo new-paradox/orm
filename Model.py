@@ -3,7 +3,7 @@ from psql_connect import DBConnectSettings
 
 class Singleton(type):
     _instances = {}
-
+    _table_name = str
     def __call__(cls, *args, **kwargs):
         if cls not in cls._instances:
             cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
@@ -11,7 +11,7 @@ class Singleton(type):
 
 
 class Model(DBConnectSettings, metaclass=Singleton):
-    __table_name = "Articles"
+
     keys = []
     Values = []
 
@@ -22,6 +22,5 @@ class Model(DBConnectSettings, metaclass=Singleton):
     def create(self):
         prepare_key = f"({', '.join(self.keys)})"
         prepare_values = str(tuple(self.Values))
-        query = f"INSERT INTO {self.__table_name.lower()} {prepare_key} VALUES {prepare_values};"
-        # self._cursor.execute(query)
+        query = f"INSERT INTO {self._table_name.lower()} {prepare_key} VALUES {prepare_values};"
         return self._cursor.execute(query)
