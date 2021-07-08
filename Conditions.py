@@ -21,8 +21,29 @@ class EQ:
         self.key_arg = key_arg
         self.value_arg = value_arg
 
-    def prepare_condition(self):
+    def prepare_condition(self) -> str:
         if type(self.value_arg) is str:
             return "%s = '%s'" % (self.key_arg, self.value_arg)
         else:
             return "%s = %s" % (self.key_arg, self.value_arg)
+
+
+class NE:
+    pass
+
+
+class LT:
+    pass
+
+
+class GT:
+    pass
+
+
+class LE:
+    pass
+
+
+class GE:
+    pass
+

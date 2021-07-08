@@ -18,7 +18,7 @@ class Singleton(type):
 class Model(DBConnectSettings, metaclass=Singleton):
     keys = []
     Values = []
-    condition = ''
+    condition = None
 
     def __setitem__(self, key, value):
         self.keys.append(key)
@@ -35,19 +35,10 @@ class Model(DBConnectSettings, metaclass=Singleton):
         if self.condition:
             query += f" WHERE {self.condition}"
         self._cursor.execute(query + ";")
-        return self._cursor.fetchone()
+        return self._cursor.fetchall()
 
     def update(self):
         pass
 
     def delete(self):
-        pass
-
-    def create_table(self):
-        pass
-
-    def delete_table(self):
-        pass
-
-    def alter_table(self):
         pass
