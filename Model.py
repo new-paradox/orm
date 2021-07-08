@@ -31,8 +31,10 @@ class Model(DBConnectSettings, metaclass=Singleton):
         return self._cursor.execute(query)
 
     def read(self):
-        query = f"SELECT * FROM {self._table_name.lower()} {self.condition};"
-        self._cursor.execute(query)
+        query = f"SELECT * FROM {self._table_name.lower()}"
+        if self.condition:
+            query += f" WHERE {self.condition}"
+        self._cursor.execute(query + ";")
         return self._cursor.fetchone()
 
     def update(self):

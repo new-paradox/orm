@@ -17,7 +17,7 @@ def add_article(flow):
 def get_article():
     row = Article()
     # row.condition = QFilter(EQ('id', 45), EQ('title', 'bar'))
-    condition = str(QFilter(EQ('id', 45)))
+    row.condition = QFilter(EQ('description', 'is_cat'), EQ('content', 'foofoo'))
     data = row.read()
     print(data)
 
