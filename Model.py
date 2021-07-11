@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
-
-from typing import Optional
-
-from psql_connect import DBConnectSettings
+from sql_connect import AutoDBConfigManager
 
 
 class Singleton(type):
@@ -15,7 +12,7 @@ class Singleton(type):
         return cls._instances[cls]
 
 
-class Model(DBConnectSettings, metaclass=Singleton):
+class Model(AutoDBConfigManager, metaclass=Singleton):
     keys = []
     Values = []
     condition = None
@@ -35,7 +32,15 @@ class Model(DBConnectSettings, metaclass=Singleton):
         if self.condition:
             query += f" WHERE {self.condition}"
         self._cursor.execute(query + ";")
+        print(query)
         return self._cursor.fetchall()
+
+    def read_by_one_id(self, model_id):
+        query = f"SELECT * FROM {self._table_name.lower()}" \
+                f" WHERE {self._table_name.lower()}.id = {model_id};"
+        self._cursor.execute(query)
+        print(query)
+        return self._cursor.fetchone()
 
     def update(self):
         pass
