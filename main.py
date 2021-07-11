@@ -14,14 +14,14 @@ def add_article(flow):
     row.create()
 
 
-def get_article():
+def get_article(flow):
     row = Article()
     # row.condition = QFilter(AND(EQ('description', 'foo'), EQ('content', 'FOO')))
-    row.condition = QFilter(OR(EQ('description', 'foo'), NE('id', 1)))
+    row.condition = flow
     data = row.read()
     print(data)
 
-
 if __name__ == '__main__':
-    flow = {'id': 45, 'content': 'FOO'}
-    get_article()
+    # flow = {'id': 45, 'content': 'FOO'}
+    # get_article(QFilter(OR(EQ('description', 'foo'), NE('id', 1))))
+    print(Article().read_by_one_id(model_id=45))
