@@ -1,93 +1,65 @@
 # -*- coding: utf-8 -*-
-from typing import Any
 
 
-class BaseOperand:
-    condition: object
-    operand: str
+def chained(fn):
+    def new(*args, **kwargs):
+        fn(*args, **kwargs)
+        return args[0]
 
-    def __init__(self, *args):
-        self.conditions = args
-
-    def return_conditions(self):
-        return self.conditions
-
-
-class AND(BaseOperand):
-    operand = 'AND'
-
-
-class OR(BaseOperand):
-    operand = 'OR'
-
-
-class BaseCompare:
-    compare_arg: str
-
-    def __init__(self, key_arg: str, value_arg: Any):
-        self.key_arg = key_arg
-        self.value_arg = value_arg
-
-    def prepare_condition(self) -> str:
-        result_prepare = "%s %s '%s'" % (
-            self.key_arg,
-            self.compare_arg,
-            self.value_arg
-        ) if type(self.value_arg) is str else "%s %s %s" % (
-            self.key_arg,
-            self.compare_arg,
-            self.value_arg
-        )
-        return result_prepare
-
-
-class EQ(BaseCompare):
-    def __init__(self, key_arg: str, value_arg: Any):
-        super().__init__(key_arg, value_arg)
-        self.compare_arg = '='
-
-
-class NE(BaseCompare):
-    def __init__(self, key_arg: str, value_arg: Any):
-        super().__init__(key_arg, value_arg)
-        self.compare_arg = '!='
-
-
-class LT(BaseCompare):
-    def __init__(self, key_arg: str, value_arg: Any):
-        super().__init__(key_arg, value_arg)
-        self.compare_arg = '<'
-
-
-class GT(BaseCompare):
-    def __init__(self, key_arg: str, value_arg: Any):
-        super().__init__(key_arg, value_arg)
-        self.compare_arg = '>'
-
-
-class LE(BaseCompare):
-    def __init__(self, key_arg: str, value_arg: Any):
-        super().__init__(key_arg, value_arg)
-        self.compare_arg = '<='
-
-
-class GE(BaseCompare):
-    def __init__(self, key_arg: str, value_arg: Any):
-        super().__init__(key_arg, value_arg)
-        self.compare_arg = '>='
+    return new
 
 
 class QFilter:
-    def __init__(self, *args):
-        self.prepare_conditions = []
-        self.operands = args
-        for operand_obj in self.operands:
-            self.operand = operand_obj.operand
-            conditions = operand_obj.return_conditions()
-            for condition in conditions:
-                self.prepare_conditions.append(condition.prepare_condition())
+    def __init__(self):
+        self.condition = ''
 
-        self.and_clause_str = f' {self.operand} '.join(self.prepare_conditions)
+    @chained
+    def add_k(self, condition):
+        self.condition += condition
 
-    def __repr__(self):
-        return self.and_clause_str
+    @chained
+    def add_v(self, condition):
+        if isinstance(condition, str):
+            self.condition += f"'{condition}'"
+        else:
+            self.condition += f"{condition}"
+
+    @chained
+    def open_sh(self):
+        self.condition += '('
+
+    @chained
+    def close_sh(self):
+        self.condition += ')'
+
+    @chained
+    def eq(self):
+        self.condition += ' = '
+
+    @chained
+    def ne(self):
+        self.condition += ' != '
+
+    @chained
+    def lt(self):
+        self.condition += ' < '
+
+    @chained
+    def gt(self):
+        self.condition += ' > '
+
+    @chained
+    def le(self):
+        self.condition += ' <= '
+
+    @chained
+    def ge(self):
+        self.condition += ' >= '
+
+    @chained
+    def q_and(self):
+        self.condition += ' AND '
+
+    @chained
+    def q_or(self):
+        self.condition += ' OR '
