@@ -22,8 +22,7 @@ def get_article(condition):
 
     row = Article()
     row.condition = condition
-    data = row.read()
-    print(data)
+    return row.read()
 
 
 def update_article(set_update, condition):
@@ -62,8 +61,8 @@ def read_by_one_id(model_id):
 
 if __name__ == '__main__':
     # flow = {'id': 45, 'content': 'FOO'}
-    # get_article(QFilter().add_k('description').eq().add_v('foo').q_or().add_k('id').ne().add_v(1).condition)
-    # print(Article().read_by_one_id(model_id=1))
-    # update_article(set_update=QFilter().add_k('title').eq().add_v('AARRRGH').condition,
-    #                condition=QFilter().add_k('id').eq().add_v(45).condition)
-    delete_article(condition=QFilter().add_k('id').eq().add_v(1).condition)
+    print(get_article(QFilter().add_k('description').eq().add_v('foo').q_or().add_k('id').ne().add_v(1).condition))
+    print(Article().read_by_one_id(model_id=45))
+    update_article(set_update=QFilter().add_k('title').eq().add_v('AARRRGH').condition,
+                   condition=QFilter().add_k('id').eq().add_v(45).condition)
+    # delete_article(condition=QFilter().add_k('id').eq().add_v(1).condition)
