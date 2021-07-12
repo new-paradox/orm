@@ -99,4 +99,4 @@ class AutoDBConfigManager(BaseDBConfig):
                 self._cursor = self._connection.cursor()
 
         except pymysql.Error as err:
-            print(f'Error from psql controller {err}')
+            print(f'Error from mysql controller {err}')
