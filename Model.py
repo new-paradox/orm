@@ -16,6 +16,7 @@ class Model(AutoDBConfigManager, metaclass=Singleton):
     keys = []
     Values = []
     condition = None
+    set_update = None
 
     def __setitem__(self, key, value):
         self.keys.append(key)
@@ -25,6 +26,7 @@ class Model(AutoDBConfigManager, metaclass=Singleton):
         prepare_key = f"({', '.join(self.keys)})"
         prepare_values = str(tuple(self.Values))
         query = f"INSERT INTO {self._table_name.lower()} {prepare_key} VALUES {prepare_values};"
+        print(query)
         return self._cursor.execute(query)
 
     def read(self):
@@ -43,7 +45,14 @@ class Model(AutoDBConfigManager, metaclass=Singleton):
         return self._cursor.fetchone()
 
     def update(self):
-        pass
+        query = f" UPDATE {self._table_name.lower()}" \
+                f" SET {self.set_update}" \
+                f" WHERE {self.condition};"
+        print(query)
+        return self._cursor.execute(query)
 
     def delete(self):
-        pass
+        query = f" DELETE FROM {self._table_name.lower()}" \
+                f" WHERE {self.condition};"
+        print(query)
+        return self._cursor.execute(query)

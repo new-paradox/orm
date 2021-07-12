@@ -100,3 +100,7 @@ class AutoDBConfigManager(BaseDBConfig):
 
         except pymysql.Error as err:
             print(f'Error from mysql controller {err}')
+
+    def __del__(self):
+        self._connection.commit()
+        self._connection.close()
