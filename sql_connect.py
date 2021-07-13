@@ -100,7 +100,7 @@ class AutoDBConfigManager(BaseDBConfig):
                                            password=self.password,
                                            database=self.database).get_connection()
             self._cursor = self._connection.cursor()
-        except (pymysql.Error, psycopg2.Error) as err:
+        except (pymysql.Error, psycopg2.Error, ValueError) as err:
             print(f'Error from db controller {err}')
 
     def __del__(self):
