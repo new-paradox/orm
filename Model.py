@@ -24,8 +24,8 @@ class Model(AutoDBConfigManager, metaclass=Singleton):
     :param condition: Используется для read/epdate/delete операций;
     :param set_update: Используется для update операции хранит условие для ихменения типа колонок таблицы;
 
-    :method read_by_one_id: ;
-    :method make_query:
+    :method read_by_one_id: SELECT запрос с прокидыванием id искомой строки;
+    :method make_query: создание запроса из терминала;
     """
     keys = []
     Values = []
