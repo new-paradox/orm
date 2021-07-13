@@ -3,6 +3,9 @@ from sql_connect import AutoDBConfigManager
 
 
 class Singleton(type):
+    """
+    singleton metaclass
+    """
     _instances = {}
     _table_name = str
 
@@ -13,6 +16,17 @@ class Singleton(type):
 
 
 class Model(AutoDBConfigManager, metaclass=Singleton):
+    """
+    Model имеет CRUD методы взаимодействия с MySQL и PostgreSQL;
+    От этого объекта наследуются модели таблиц, в которых уже описываются их поля;
+    :param keys: Используется для create операций, получает имена столбцов таблицы;
+    :param Values: Используется для create операций, получает значения столбцов таблицы;
+    :param condition: Используется для read/epdate/delete операций;
+    :param set_update: Используется для update операции хранит условие для ихменения типа колонок таблицы;
+
+    :method read_by_one_id: ;
+    :method make_query:
+    """
     keys = []
     Values = []
     condition = None
@@ -56,3 +70,8 @@ class Model(AutoDBConfigManager, metaclass=Singleton):
                 f" WHERE {self.condition};"
         print(query)
         return self._cursor.execute(query)
+
+    def make_query(self, query):
+        print(query)
+        self._cursor.execute(query)
+        return self._cursor.fetchall()

@@ -8,6 +8,9 @@ from enum import Enum
 
 @dataclass
 class BaseDBConfig:
+    """
+    Стандартные настройки для соединения с db;
+    """
     host: str
     user: str
     db_driver: str
@@ -18,7 +21,7 @@ class BaseDBConfig:
 @dataclass
 class MySQLDBConfig(BaseDBConfig):
     """
-    Настраивается индивидаульно под необходимые поля для db;
+    Настраивается индивидаульно под db;
     """
     password: str
     database: str
@@ -27,13 +30,16 @@ class MySQLDBConfig(BaseDBConfig):
 @dataclass
 class PSQLDBConfig(BaseDBConfig):
     """
-    Настраивается индивидаульно под необходимые поля для db;
+    Настраивается индивидаульно под db;
     """
     password: str
     database: str
 
 
 class PostgreSQLDB(PSQLDBConfig):
+    """
+    Инициализирует соединение с PostgreSQL;
+    """
     def __init__(self, database, user, password):
         self.database = database
         self.password = password
@@ -47,6 +53,9 @@ class PostgreSQLDB(PSQLDBConfig):
 
 
 class MysqlDB(MySQLDBConfig):
+    """
+    Инициализирует соединение с MySQL;
+    """
     def __init__(self, host, user, password, database):
         self.database = database
         self.password = password
@@ -62,11 +71,17 @@ class MysqlDB(MySQLDBConfig):
 
 
 class DBDrivers(Enum):
+    """
+    Хранит имена объектов, инициализирующих соединение с db;
+    """
     PostgreSQLDB = 'psql'
     MysqlDB = 'mysql'
 
 
 class AutoDBConfigManager(BaseDBConfig):
+    """
+    Смотрит config.py -> выбирает db для соединения;
+    """
     def __init__(self):
         try:
             self.db_driver = DBDrivers(config.DB_DRIVER).name

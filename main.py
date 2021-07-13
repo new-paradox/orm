@@ -56,13 +56,42 @@ def read_by_one_id(model_id):
     """
 
     row = Article()
-    row.read_by_one_id(model_id=model_id)
+    return row.read_by_one_id(model_id=model_id)
 
 
 if __name__ == '__main__':
-    # flow = {'id': 45, 'content': 'FOO'}
-    print(get_article(QFilter().add_k('description').eq().add_v('foo').q_or().add_k('id').ne().add_v(1).condition))
-    print(Article().read_by_one_id(model_id=45))
+    """
+    Обязательный import:
+    Структура таблицы:
+    from models.Article import Article
+    
+    Конструктор условий:
+    from Conditions import QFilter
+    
+    Пример создания строки в таблице:
+    
+    flow = {'id': 45, 'content': 'FOO'}
+    add_article(flow)
+    ----------------------------
+    Пример SELECT запроса в таблицу с условием:
+    
+    get_article(QFilter().add_k('description').eq().add_v('foo').q_or().add_k('id').ne().add_v(1).condition)
+    ----------------------------
+    Пример UPDATE запроса в таблицу:
+    
     update_article(set_update=QFilter().add_k('title').eq().add_v('AARRRGH').condition,
                    condition=QFilter().add_k('id').eq().add_v(45).condition)
-    # delete_article(condition=QFilter().add_k('id').eq().add_v(1).condition)
+    ----------------------------   
+    Пример DELETE запроса в таблицу:
+    
+    delete_article(condition=QFilter().add_k('id').eq().add_v(1).condition)
+    ----------------------------
+    Пример SELECT запроса с прокидыванием id строки:
+        
+    read_by_one_id(45)
+    ----------------------------
+    Пример создания запроса из терминала:
+    
+    $ python make_query.py -Q 'SELECT * FROM avail.articles;'
+    
+    """
