@@ -19,8 +19,8 @@ class Model(AutoDBConfigManager, metaclass=Singleton):
     """
     Model имеет CRUD методы взаимодействия с MySQL и PostgreSQL;
     От этого объекта наследуются модели таблиц, в которых уже описываются их поля;
-    :param keys: Используется для create операций, получает имена столбцов таблицы;
-    :param Values: Используется для create операций, получает значения столбцов таблицы;
+    :param keys: -> List Используется для create операций, получает имена столбцов таблицы;
+    :param Values: -> List Используется для create операций, получает значения столбцов таблицы;
     :param condition: Используется для read/epdate/delete операций;
     :param set_update: Используется для update операции хранит условие для ихменения типа колонок таблицы;
 

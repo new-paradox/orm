@@ -83,3 +83,11 @@ class QFilter:
     @chained
     def q_in(self):
         self.condition += ' IN '
+
+    @chained
+    def q_from(self):
+        self.condition += ' FROM '
+
+    @chained
+    def comma(self):
+        self.condition += ', '
