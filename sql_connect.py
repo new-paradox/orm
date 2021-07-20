@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from typing import Dict
+
 import pymysql
 import config
 from dataclasses import dataclass
@@ -11,17 +13,15 @@ class BaseDBConfig:
     """
     Стандартные настройки для соединения с db;
     """
+    db_driver: str
     host: str
     user: str
-    db_driver: str
-    password: str
-    database: str
 
 
 @dataclass
 class MySQLDBConfig(BaseDBConfig):
     """
-    Настраивается индивидаульно под db;
+    Настраивается индивидаульно под mysql db;
     """
     password: str
     database: str
@@ -30,7 +30,7 @@ class MySQLDBConfig(BaseDBConfig):
 @dataclass
 class PSQLDBConfig(BaseDBConfig):
     """
-    Настраивается индивидаульно под db;
+    Настраивается индивидаульно под psql db;
     """
     password: str
     database: str
@@ -40,69 +40,75 @@ class PostgreSQLDB(PSQLDBConfig):
     """
     Инициализирует соединение с PostgreSQL;
     """
-    def __init__(self, database, user, password):
-        self.database = database
-        self.password = password
-        self.user = user
-        self._connection = psycopg2.connect(dbname=f"{self.database}",
-                                            user=f"{self.user}",
-                                            password=f"{self.password}")
+
+    def __init__(self):
+        self.connection = psycopg2.connect(dbname=f"{config.DATABASE}",
+                                           user=f"{config.USER}",
+                                           password=f"{config.PASSWORD}")
 
     def get_connection(self):
-        return self._connection
+        return self.connection
 
 
 class MysqlDB(MySQLDBConfig):
     """
     Инициализирует соединение с MySQL;
     """
-    def __init__(self, host, user, password, database):
-        self.database = database
-        self.password = password
-        self.user = user
-        self.host = host
-        self._connection = pymysql.connect(host=self.host,
-                                           user=self.user,
-                                           password=self.password,
-                                           database=self.database)
+
+    def __init__(self, *args):
+        args = args[0]
+        host = args['host']
+        user = args['user']
+        password = args['password']
+        database = args['database']
+        self.connection = pymysql.connect(host=host,
+                                          user=user,
+                                      password=password,
+                                      database=database)
 
     def get_connection(self):
-        return self._connection
+        return self.connection
 
 
 class DBDrivers(Enum):
-    """
-    Хранит имена объектов, инициализирующих соединение с db;
-    """
-    PostgreSQLDB = 'psql'
-    MysqlDB = 'mysql'
+    mysql = MysqlDB
+    psql = PostgreSQLDB
+
+
+def get_driver(driver_name: str) -> Dict:
+    enum_elem = [{"name": name, "method": sql_driver} for name, sql_driver in vars(DBDrivers).items()
+                 if name == driver_name]
+    if enum_elem:
+        return enum_elem[0]
+
+
+def prepare_driver(driver: str):
+    driver = get_driver(driver)
+    return driver["method"]
 
 
 class AutoDBConfigManager(BaseDBConfig):
     """
     Смотрит config.py -> выбирает db для соединения;
     """
+
     def __init__(self):
         try:
-            self.db_driver = DBDrivers(config.DB_DRIVER).name
+            self.db_driver = config.DB_DRIVER
             self.host = config.HOST
             self.user = config.USER
             self.password = config.PASSWORD
             self.database = config.DATABASE
-            if self.db_driver == PostgreSQLDB.__name__:
-                self._connection = PostgreSQLDB(database=self.database,
-                                                user=self.user,
-                                                password=self.password).get_connection()
-
-            if self.db_driver == MysqlDB.__name__:
-                self._connection = MysqlDB(host=self.host,
-                                           user=self.user,
-                                           password=self.password,
-                                           database=self.database).get_connection()
-            self._cursor = self._connection.cursor()
+            data = {"host": self.host, "user": self.user, "password": self.password, "database": self.database}
+            self._connection = prepare_driver(config.DB_DRIVER).value(data).get_connection()
         except (pymysql.Error, psycopg2.Error, ValueError) as err:
             print(f'Error from db controller {err}')
 
     def __del__(self):
         self._connection.commit()
         self._connection.close()
+
+    @property
+    def connection(self):
+        return self._connection
+
