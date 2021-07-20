@@ -57,14 +57,17 @@ class MysqlDB(MySQLDBConfig):
 
     def __init__(self, *args):
         args = args[0]
-        host = args['host']
-        user = args['user']
-        password = args['password']
-        database = args['database']
-        self.connection = pymysql.connect(host=host,
-                                          user=user,
-                                      password=password,
-                                      database=database)
+
+        self.host = args['host']
+        self.user = args['user']
+        self.password = args['password']
+        self.database = args['database']
+        self.connection = pymysql.connect(host=self.host,
+                                          user=self.user,
+                                      password=self.password,
+                                      database=self.database)
+
+        
 
     def get_connection(self):
         return self.connection
@@ -75,17 +78,14 @@ class DBDrivers(Enum):
     psql = PostgreSQLDB
 
 
-def get_driver(driver_name: str) -> Dict:
+
+def get_driver(driver_name: str):
     enum_elem = [{"name": name, "method": sql_driver} for name, sql_driver in vars(DBDrivers).items()
                  if name == driver_name]
     if enum_elem:
-        return enum_elem[0]
+        return enum_elem[0]["method"]
 
-
-def prepare_driver(driver: str):
-    driver = get_driver(driver)
-    return driver["method"]
-
+      
 
 class AutoDBConfigManager(BaseDBConfig):
     """
@@ -100,7 +100,9 @@ class AutoDBConfigManager(BaseDBConfig):
             self.password = config.PASSWORD
             self.database = config.DATABASE
             data = {"host": self.host, "user": self.user, "password": self.password, "database": self.database}
-            self._connection = prepare_driver(config.DB_DRIVER).value(data).get_connection()
+
+            self._connection = get_driver(config.DB_DRIVER).value(data).get_connection()
+
         except (pymysql.Error, psycopg2.Error, ValueError) as err:
             print(f'Error from db controller {err}')
 
@@ -112,3 +114,4 @@ class AutoDBConfigManager(BaseDBConfig):
     def connection(self):
         return self._connection
 
+      
