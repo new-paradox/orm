@@ -11,11 +11,13 @@ class Singleton(type):
 
     def __call__(cls, *args, **kwargs):
         if cls not in cls._instances:
+            cls._driver = AutoDBConfigManager()
+            cls._cursor = cls._driver.connection.cursor()
             cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
         return cls._instances[cls]
 
 
-class Model(AutoDBConfigManager, metaclass=Singleton):
+class Model(metaclass=Singleton):
     """
     Model имеет CRUD методы взаимодействия с MySQL и PostgreSQL;
     От этого объекта наследуются модели таблиц, в которых уже описываются их поля;
