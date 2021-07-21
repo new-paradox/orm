@@ -14,6 +14,8 @@ class Singleton(type):
             cls._driver = AutoDBConfigManager()
             cls._cursor = cls._driver.connection.cursor()
             cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+            cls._driver = AutoDBConfigManager()
+            cls._cursor = cls._driver.connection.cursor()
         return cls._instances[cls]
 
 
