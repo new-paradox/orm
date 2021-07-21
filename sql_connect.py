@@ -102,7 +102,7 @@ class AutoDBConfigManager(BaseDBConfig):
                     "password": self.password,
                     "database": self.database
                     }
-            self._connection = get_driver(config.DB_DRIVER).value(data).get_connection()
+            self._connection = get_driver(self.db_driver).value(data).get_connection()
         except (pymysql.Error, psycopg2.Error, ValueError) as err:
             print(f'Error from db controller {err}')
 
