@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-from typing import Dict
-
+import sqlite3
 import pymysql
 import config
 from dataclasses import dataclass
@@ -16,58 +15,58 @@ class BaseDBConfig:
     db_driver: str
     host: str
     user: str
-
-
-@dataclass
-class MySQLDBConfig(BaseDBConfig):
-    """
-    Настраивается индивидаульно под mysql db;
-    """
     password: str
     database: str
 
 
-@dataclass
-class PSQLDBConfig(BaseDBConfig):
-    """
-    Настраивается индивидаульно под psql db;
-    """
-    password: str
-    database: str
-
-
-class PostgreSQLDB(PSQLDBConfig):
+class PostgreSQLDB(BaseDBConfig):
     """
     Инициализирует соединение с PostgreSQL;
     """
 
-    def __init__(self):
-        self.connection = psycopg2.connect(dbname=f"{config.DATABASE}",
-                                           user=f"{config.USER}",
-                                           password=f"{config.PASSWORD}")
+    def __init__(self, *args):
+        args = args[0]
+        self.user = args['user']
+        self.password = args['password']
+        self.database = args['database']
+        self.connection = psycopg2.connect(dbname=f"{self.database}",
+                                           user=f"{self.user}",
+                                           password=f"{self.password}")
 
     def get_connection(self):
         return self.connection
 
 
-class MysqlDB(MySQLDBConfig):
+class SQLite(BaseDBConfig):
+    """
+    Инициализирует соединение с sqlite3;
+    """
+
+    def __init__(self, *args):
+        args = args[0]
+        self.database = args['database']
+        self.connection = sqlite3.connect(self.database)
+
+    def get_connection(self):
+        return self.connection
+
+
+class MysqlDB(BaseDBConfig):
     """
     Инициализирует соединение с MySQL;
     """
 
     def __init__(self, *args):
         args = args[0]
-
-        self.host = args['host']
         self.user = args['user']
+        self.host = args['host']
         self.password = args['password']
         self.database = args['database']
         self.connection = pymysql.connect(host=self.host,
                                           user=self.user,
-                                      password=self.password,
-                                      database=self.database)
-
-        
+                                          password=self.password,
+                                          database=self.database
+                                          )
 
     def get_connection(self):
         return self.connection
@@ -76,7 +75,7 @@ class MysqlDB(MySQLDBConfig):
 class DBDrivers(Enum):
     mysql = MysqlDB
     psql = PostgreSQLDB
-
+    sqlite = SQLite
 
 
 def get_driver(driver_name: str):
@@ -85,11 +84,10 @@ def get_driver(driver_name: str):
     if enum_elem:
         return enum_elem[0]["method"]
 
-      
 
 class AutoDBConfigManager(BaseDBConfig):
     """
-    Смотрит config.py -> выбирает db для соединения;
+    Смотрит config.py -> выбирает из DBDrivers db для соединения;
     """
 
     def __init__(self):
@@ -99,10 +97,12 @@ class AutoDBConfigManager(BaseDBConfig):
             self.user = config.USER
             self.password = config.PASSWORD
             self.database = config.DATABASE
-            data = {"host": self.host, "user": self.user, "password": self.password, "database": self.database}
-
+            data = {"host": self.host,
+                    "user": self.user,
+                    "password": self.password,
+                    "database": self.database
+                    }
             self._connection = get_driver(config.DB_DRIVER).value(data).get_connection()
-
         except (pymysql.Error, psycopg2.Error, ValueError) as err:
             print(f'Error from db controller {err}')
 
@@ -113,5 +113,3 @@ class AutoDBConfigManager(BaseDBConfig):
     @property
     def connection(self):
         return self._connection
-
-      
