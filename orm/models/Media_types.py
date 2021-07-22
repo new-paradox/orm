@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from Model import Model
+from orm_core.Model import Model
 
 
 class MediaType(Model):

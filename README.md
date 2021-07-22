@@ -1,8 +1,8 @@
-# orm
+# some_framework
 
 Реализована ORM с CRUD операциями поддерживающая работу с:
   - MySQL
-  -PostgreSQL
+  - PostgreSQL
   - sqlite3
 
 Необходимо создать и заполнить config.py по примеру config.py.default.py;

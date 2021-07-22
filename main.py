@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from models.Article import Article
-from Conditions import QFilter
-
-
 # @route("POST", "/new_article")
+from models.Article import Article
+from orm_core.Conditions import QFilter
+
+
 def add_article(flow):
     row = Article()
     row['id'] = flow['id']
@@ -96,3 +96,4 @@ if __name__ == '__main__':
     $ python make_query.py -Q 'SELECT * FROM avail.articles;'
     
     """
+    print(read_by_one_id(45))

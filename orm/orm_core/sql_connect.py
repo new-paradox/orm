@@ -33,8 +33,6 @@ class PostgreSQLDB(BaseDBConfig):
                                            user=f"{self.user}",
                                            password=f"{self.password}")
 
-    def get_connection(self):
-        return self.connection
 
 
 class SQLite(BaseDBConfig):
@@ -46,9 +44,6 @@ class SQLite(BaseDBConfig):
         args = args[0]
         self.database = args['database']
         self.connection = sqlite3.connect(self.database)
-
-    def get_connection(self):
-        return self.connection
 
 
 class MysqlDB(BaseDBConfig):
@@ -67,9 +62,6 @@ class MysqlDB(BaseDBConfig):
                                           password=self.password,
                                           database=self.database
                                           )
-
-    def get_connection(self):
-        return self.connection
 
 
 class DBDrivers(Enum):
@@ -102,7 +94,8 @@ class AutoDBConfigManager(BaseDBConfig):
                     "password": self.password,
                     "database": self.database
                     }
-            self._connection = get_driver(self.db_driver).value(data).get_connection()
+            self._connection = get_driver(self.db_driver).value(data).connection
+            # self._cursor = self._connection.cursor()
         except (pymysql.Error, psycopg2.Error, ValueError) as err:
             print(f'Error from db controller {err}')
 
@@ -113,3 +106,4 @@ class AutoDBConfigManager(BaseDBConfig):
     @property
     def connection(self):
         return self._connection
+

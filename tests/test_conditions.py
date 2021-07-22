@@ -1,4 +1,4 @@
-from Conditions import QFilter
+from orm.orm_core.Conditions import QFilter
 import pytest
 
 RESPONSE_1 = QFilter().q_select().add_v('name').q_from().add_k('users').q_where().add_k('id').eq().add_v(
