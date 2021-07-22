@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from sql_connect import AutoDBConfigManager
+from orm_core.sql_connect import AutoDBConfigManager
 
 
 class Singleton(type):
