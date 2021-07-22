@@ -28,6 +28,3 @@ def test_fill_cards_from_field(response, answer):
     result = response
     assert result == answer
 
-
-if __name__ == "__main__":
-    pytest.main()
