@@ -34,7 +34,6 @@ class PostgreSQLDB(BaseDBConfig):
                                            password=f"{self.password}")
 
 
-
 class SQLite(BaseDBConfig):
     """
     Инициализирует соединение с sqlite3;
@@ -77,7 +76,19 @@ def get_driver(driver_name: str):
         return enum_elem[0]["method"]
 
 
-class AutoDBConfigManager(BaseDBConfig):
+class Singleton(type):
+    """
+    singleton metaclass
+    """
+    _instances = {}
+
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]
+
+
+class AutoDBConfigManager(BaseDBConfig, metaclass=Singleton):
     """
     Смотрит config.py -> выбирает из DBDrivers db для соединения;
     """
@@ -95,7 +106,6 @@ class AutoDBConfigManager(BaseDBConfig):
                     "database": self.database
                     }
             self._connection = get_driver(self.db_driver).value(data).connection
-            # self._cursor = self._connection.cursor()
         except (pymysql.Error, psycopg2.Error, ValueError) as err:
             print(f'Error from db controller {err}')
 
@@ -106,4 +116,3 @@ class AutoDBConfigManager(BaseDBConfig):
     @property
     def connection(self):
         return self._connection
-

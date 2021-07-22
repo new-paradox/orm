@@ -32,5 +32,5 @@ flow = {'id': 45, 'content': 'FOO'} add_some_table(flow)
 
 Создание запроса из терминала:
 
-$ python make_query.py -Q 'SELECT * FROM user.some_table;'
+$ python make_query.py -Q 'SELECT * FROM name_db.some_table;'
 

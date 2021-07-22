@@ -1,25 +1,12 @@
 # -*- coding: utf-8 -*-
 from orm_core.sql_connect import AutoDBConfigManager
 
+DRIVER = AutoDBConfigManager()
 
-class Singleton(type):
+
+class Model:
     """
-    singleton metaclass
-    """
-    _instances = {}
-    _table_name = str
-
-    def __call__(cls, *args, **kwargs):
-        if cls not in cls._instances:
-            cls._driver = AutoDBConfigManager()
-            cls._cursor = cls._driver.connection.cursor()
-            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
-        return cls._instances[cls]
-
-
-class Model(metaclass=Singleton):
-    """
-    Model имеет CRUD методы взаимодействия с MySQL и PostgreSQL;
+    Model имеет CRUD методы взаимодействия с MySQL, SQLite и PostgreSQL;
     От этого объекта наследуются модели таблиц, в которых уже описываются их поля;
     :param keys: -> List Используется для create операций, получает имена столбцов таблицы;
     :param Values: -> List Используется для create операций, получает значения столбцов таблицы;
@@ -29,10 +16,12 @@ class Model(metaclass=Singleton):
     :method read_by_one_id: SELECT запрос с прокидыванием id искомой строки;
     :method make_query: создание запроса из терминала;
     """
+    _table_name = str
     keys = []
     Values = []
     condition = None
     set_update = None
+    _cursor = DRIVER.connection.cursor()
 
     def __setitem__(self, key, value):
         self.keys.append(key)
