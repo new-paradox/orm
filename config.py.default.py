@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
 
-HOST = "HOST"
+DB_HOST = "DB_HOST"
 USER = "USER"
 PASSWORD = "PASSWORD"
 DATABASE = "DB_NAME"
 DB_DRIVER = "psql/mysql/sqlite"
-PORT = "PORT"
+DB_PORT = "DB_PORT"
 
+URLS = {
+    "auth_page": "/auth",
+    "content": "/content"
+}

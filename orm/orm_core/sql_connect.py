@@ -96,7 +96,7 @@ class AutoDBConfigManager(BaseDBConfig, metaclass=Singleton):
     def __init__(self):
         try:
             self.db_driver = config.DB_DRIVER
-            self.host = config.HOST
+            self.host = config.DB_HOST
             self.user = config.USER
             self.password = config.PASSWORD
             self.database = config.DATABASE
