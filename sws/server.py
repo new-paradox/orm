@@ -3,6 +3,7 @@ from email.parser import Parser
 from functools import lru_cache
 from urllib.parse import parse_qs, urlparse
 from app import controller
+import threading
 import app.templates
 import socket
 
@@ -33,27 +34,36 @@ class Server:
         self._server_name = server_name
         self._users = {}
 
-    def serve_forever(self):
+    def create_server(self):
         serv_sock = socket.socket(
             socket.AF_INET,
             socket.SOCK_STREAM,
             proto=0)
+        serv_sock.bind((self._host, self._port))
+        serv_sock.listen()
+        return serv_sock
 
+    def serve_forever(self):
+
+        cid = 0
         try:
-            serv_sock.bind((self._host, self._port))
-            serv_sock.listen()
+            serv_sock = self.create_server()
 
             while True:
                 conn, _ = serv_sock.accept()
                 try:
-                    self.server_client(conn)
+                    t = threading.Thread(target=self.server_client,
+                                         args=(conn, cid))
+                    t.start()
+                    cid += 1
                 except Exception as e:
                     print('Client serving failed', e)
         finally:
             serv_sock.close()
 
-    def server_client(self, conn):
+    def server_client(self, conn, cid):
         try:
+            print(f'create connect {cid}')
             req = self.parse_request(conn)
             resp = self.handle_request(req)
             self.send_response(conn, resp)
@@ -120,8 +130,6 @@ class Server:
         """
         print('я в диспейтчерской')
         body = self.response(path=req.path, method=req.method)
-        # print('даже тело есть:')
-        # print(body)
         body = body.encode('utf-8')
         contentType = 'text/html; charset=utf-8'
         headers = [('Content-Type', contentType),
@@ -147,8 +155,6 @@ class Server:
         wfile.write(b'\r\n')
 
         if resp.body:
-            # print('if resp body OK')
-            # print(resp.body)
             wfile.write(resp.body)
 
         wfile.flush()
