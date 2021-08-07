@@ -1,4 +1,6 @@
+import cgi
 import json
+import logging
 from email.parser import Parser
 from functools import lru_cache
 from urllib.parse import parse_qs, urlparse
@@ -9,6 +11,9 @@ import socket
 
 MAX_LINE = 64 * 1024
 MAX_HEADERS = 100
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.DEBUG)
 
 
 class HTTPError(Exception):
@@ -44,7 +49,6 @@ class Server:
         return serv_sock
 
     def serve_forever(self):
-
         cid = 0
         try:
             serv_sock = self.create_server()
@@ -63,7 +67,7 @@ class Server:
 
     def server_client(self, conn, cid):
         try:
-            print(f'create connect {cid}')
+            logger.debug(f'create connect in server_client {cid}')
             req = self.parse_request(conn)
             resp = self.handle_request(req)
             self.send_response(conn, resp)
@@ -77,10 +81,16 @@ class Server:
             conn.close()
 
     def parse_request(self, conn):
+        content = {}
         rfile = conn.makefile('rb')
         method, target, ver = self.parse_request_line(rfile)
         headers = self.parse_headers(rfile)
+        logger.debug(headers)
         host = headers.get('Host')
+        # TODO: Переделать в поддерживаемый вид, ибо это костыли
+        if method == 'POST':
+            content = self.parse_post(rfile, headers)
+
         if not host:
             raise HTTPError(400, 'Bad request',
                             'Host header is missing')
@@ -88,15 +98,34 @@ class Server:
         #                 f'{self._server_name}:{self._port}'):
         #     print('тут мб ошибка')
         #     raise HTTPError(404, 'Not found')
-        return Request(method, target, ver, headers, rfile)
+        return Request(method, target, ver, headers, rfile, content)
+
+    def parse_post(self, rfile, headers):
+        content = {}
+        logger.debug('зашел в parse_post')
+        logger.debug(f"Content-type: {headers['Content-type']}")
+        ctype, pdict = cgi.parse_header(headers['Content-type'])
+        pdict['boundary'] = bytes(pdict['boundary'], 'utf-8')
+        content_len = int(headers.get('Content-length'))
+        pdict['CONTENT_LENGTH'] = content_len
+        logger.debug(f'ctype, pdict: {ctype, pdict}')
+        if ctype == 'multipart/form-data':
+            logger.debug(f'if ctype == multipart/form-data success')
+            content = cgi.parse_multipart(fp=rfile, pdict=pdict)
+            logger.debug(f'fields: {content}')
+        return content
+
 
     def parse_request_line(self, rfile):
+        # TODO: здесь вытащить тело запроса
         raw = rfile.readline(MAX_LINE + 1)
+        logger.debug(f'parse_request_line: {raw}')
         if len(raw) > MAX_LINE:
             raise HTTPError(400, 'Bad request',
                             'Request line is too long')
 
         req_line = str(raw, 'iso-8859-1')
+        logger.debug(f"req_line {req_line}")
         words = req_line.split()
         if len(words) != 3:
             raise HTTPError(400, 'Bad request',
@@ -119,6 +148,7 @@ class Server:
 
             headers.append(line)
             if len(headers) > MAX_HEADERS:
+                logger.debug(f"req_line {headers}")
                 raise HTTPError(494, 'Too many headers')
 
         sheaders = b''.join(headers).decode('iso-8859-1')
@@ -128,8 +158,8 @@ class Server:
         """
         диспетчеризация запросов
         """
-        print('я в диспейтчерской')
-        body = self.response(path=req.path, method=req.method)
+        # print('я в диспейтчерской')
+        body = self.response(path=req.path, method=req.method, request=req)
         body = body.encode('utf-8')
         contentType = 'text/html; charset=utf-8'
         headers = [('Content-Type', contentType),
@@ -141,17 +171,13 @@ class Server:
     def send_response(self, conn, resp):
         wfile = conn.makefile('wb')
         status_line = f'HTTP/1.1 {resp.status} {resp.reason}\r\n'
-        print(status_line)
+        logger.debug(f"status_line response {status_line}")
         wfile.write(status_line.encode('iso-8859-1'))
 
         if resp.headers:
-            print('if resp headers OK')
-            print(resp.headers)
             for (key, value) in resp.headers:
                 header_line = f'{key}: {value}\r\n'
-                print(header_line)
                 wfile.write(header_line.encode('iso-8859-1'))
-                print(wfile)
         wfile.write(b'\r\n')
 
         if resp.body:
@@ -160,14 +186,14 @@ class Server:
         wfile.flush()
         wfile.close()
 
-    def response(self, path, method):
+    def response(self, path, method, request):
         key_func = f'{method} {path}'
         with open('path.json', 'r') as outfile:
             rout = json.load(outfile)
         if key_func in rout:
-            print('я в бизнес логику уйти попробую')
+            logger.debug("go to routing")
             f = getattr(controller, rout[key_func])
-            return f()
+            return f(request)
 
     def send_error(self, conn, err):
         try:
@@ -185,12 +211,13 @@ class Server:
 
 
 class Request:
-    def __init__(self, method, target, version, headers, rfile):
+    def __init__(self, method, target, version, headers, rfile, content):
         self.method = method
         self.target = target
         self.version = version
         self.headers = headers
         self.rfile = rfile
+        self.content = content
 
     @property
     def path(self):
@@ -217,6 +244,7 @@ if __name__ == '__main__':
     # host = sys.argv[1]
     # port = int(sys.argv[2])
     # name = sys.argv[3]
+    #
 
     serv = Server(host='127.0.0.1', port=9000, server_name='some')
     try:

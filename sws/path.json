@@ -1,1 +1,0 @@
-{"GET /": "index", "GET /bar": "bar", "GET /index": "index", "GET /auth": "bar"}

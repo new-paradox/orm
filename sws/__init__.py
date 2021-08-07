@@ -6,29 +6,21 @@ class Routes:
     pass
 
 
-def read_rout2json():
-    with open('path.json', 'r') as outfile:
-        return json.load(outfile)
-
-
-def write_rout2json(temp_recipient, method, path, func):
-    with open('path.json', 'w') as outfile:
-        temp_recipient[f'{method} {path}'] = func.__name__
-        json.dump(temp_recipient, outfile)
-
-
-def route(path, method):
+class PathController:
     temp_recipient = {}
 
+
+def route(method, path):
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
             return func(*args, **kwargs)
 
         setattr(Routes, func.__name__, wrapper)
-        temp_recipient = read_rout2json()
-        write_rout2json(temp_recipient=temp_recipient, method=method, path=path, func=func)
-
+        PathController.temp_recipient[f'{method} {path}'] = func.__name__
+        temp_recipient = PathController.temp_recipient
+        with open('path.json', 'w') as outfile:
+            json.dump(temp_recipient, outfile)
         return func
 
     return decorator
