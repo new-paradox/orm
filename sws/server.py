@@ -61,7 +61,7 @@ class Server:
                     t.start()
                     cid += 1
                 except Exception as e:
-                    print('Client serving failed', e)
+                    logger.debug('Client serving failed', e)
         finally:
             serv_sock.close()
 
@@ -81,43 +81,24 @@ class Server:
             conn.close()
 
     def parse_request(self, conn):
-        content = {}
         rfile = conn.makefile('rb')
         method, target, ver = self.parse_request_line(rfile)
         headers = self.parse_headers(rfile)
         logger.debug(headers)
         host = headers.get('Host')
-        # TODO: Переделать в поддерживаемый вид, ибо это костыли
-        if method == 'POST':
-            content = self.parse_post(rfile, headers)
-
         if not host:
             raise HTTPError(400, 'Bad request',
                             'Host header is missing')
+        if method not in ('POST', 'GET'):
+            raise HTTPError(400, 'Bad request',
+                            f"can not handle {method} request")
         # if host not in (self._server_name,
         #                 f'{self._server_name}:{self._port}'):
         #     print('тут мб ошибка')
         #     raise HTTPError(404, 'Not found')
-        return Request(method, target, ver, headers, rfile, content)
-
-    def parse_post(self, rfile, headers):
-        content = {}
-        logger.debug('зашел в parse_post')
-        logger.debug(f"Content-type: {headers['Content-type']}")
-        ctype, pdict = cgi.parse_header(headers['Content-type'])
-        pdict['boundary'] = bytes(pdict['boundary'], 'utf-8')
-        content_len = int(headers.get('Content-length'))
-        pdict['CONTENT_LENGTH'] = content_len
-        logger.debug(f'ctype, pdict: {ctype, pdict}')
-        if ctype == 'multipart/form-data':
-            logger.debug(f'if ctype == multipart/form-data success')
-            content = cgi.parse_multipart(fp=rfile, pdict=pdict)
-            logger.debug(f'fields: {content}')
-        return content
-
+        return Request(method, target, ver, headers, rfile)
 
     def parse_request_line(self, rfile):
-        # TODO: здесь вытащить тело запроса
         raw = rfile.readline(MAX_LINE + 1)
         logger.debug(f'parse_request_line: {raw}')
         if len(raw) > MAX_LINE:
@@ -155,10 +136,6 @@ class Server:
         return Parser().parsestr(sheaders)
 
     def handle_request(self, req):
-        """
-        диспетчеризация запросов
-        """
-        # print('я в диспейтчерской')
         body = self.response(path=req.path, method=req.method, request=req)
         body = body.encode('utf-8')
         contentType = 'text/html; charset=utf-8'
@@ -211,17 +188,35 @@ class Server:
 
 
 class Request:
-    def __init__(self, method, target, version, headers, rfile, content):
+    def __init__(self, method, target, version, headers, rfile):
         self.method = method
         self.target = target
         self.version = version
         self.headers = headers
         self.rfile = rfile
-        self.content = content
 
     @property
     def path(self):
         return self.url.path
+
+    @property
+    def get_content(self):
+        logger.debug('get_content')
+        content = {}
+        try:
+            logger.debug(f"Content-type: {self.headers['Content-type']}")
+            ctype, pdict = cgi.parse_header(self.headers['Content-type'])
+            pdict['boundary'] = bytes(pdict['boundary'], 'utf-8')
+            content_len = int(self.headers.get('Content-length'))
+            pdict['CONTENT_LENGTH'] = content_len
+            logger.debug(f'ctype, pdict: {ctype, pdict}')
+            if ctype == 'multipart/form-data':
+                logger.debug(f'if ctype == multipart/form-data success')
+                content = cgi.parse_multipart(fp=self.rfile, pdict=pdict)
+                logger.debug(f'fields: {content}')
+        except Exception as exc:
+            logger.debug(f"Error with parse request content {exc}")
+        return content
 
     @property
     @lru_cache(maxsize=None)
@@ -244,7 +239,6 @@ if __name__ == '__main__':
     # host = sys.argv[1]
     # port = int(sys.argv[2])
     # name = sys.argv[3]
-    #
 
     serv = Server(host='127.0.0.1', port=9000, server_name='some')
     try:
