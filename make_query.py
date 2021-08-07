@@ -1,5 +1,5 @@
 import argparse
-from orm_core.Model import Model
+from orm.orm_core.Model import Model
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Query maker')

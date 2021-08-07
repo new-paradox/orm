@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from orm_core.sql_connect import AutoDBConfigManager
+from orm.orm_core.sql_connect import AutoDBConfigManager
 
 DRIVER = AutoDBConfigManager()
 
