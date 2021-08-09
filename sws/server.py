@@ -27,31 +27,13 @@ class HTTPError(Exception):
 
 class Cookies:
     """
-    class пока не используется
+    Объект, в котором хранятся и модифицируются кукисы
+    в рамках клиент-серверного взаимодействия;
     """
-    def __init__(self, headers):
-        self.headers = headers
-        self.set_cookies = None
 
-    def _parse_cookies(self, cookie_str, dictionary) -> dict:
-        """Tries to parse any key-value pairs of cookies in a string,
-        then updates the the dictionary with any key-value pairs found.
-
-        **Example**::
-            dictionary = {}
-            _parse_cookies('my=value', dictionary)
-            # Now the following is True
-            dictionary['my'] == 'value'
-
-        :param cookie_str: A string containing "key=value" pairs from an HTTP "Set-Cookie" header.
-        :type cookie_str: ``str``
-        :param dictionary: A dictionary to update with any found key-value pairs.
-        :type dictionary: ``dict``
-        """
-        parsed_cookie = SimpleCookie(cookie_str)
-        for cookie in parsed_cookie.values():
-            dictionary[cookie.key] = cookie.coded_value
-        return dictionary
+    def __init__(self, cookies):
+        self.cookies = cookies
+        self.set_cookies = False
 
 
 class Request:
@@ -62,17 +44,16 @@ class Request:
         self.headers = headers
         self.rfile = rfile
         self.rcookies = rcookies
-        self.cookies_modyficate = False
 
     @property
     def path(self):
         return self.url.path
 
-    # def get_cookies(self):
-    #     print(type(self.headers))
-
     @property
     def get_content(self):
+        """
+        Возвращает только параметры из multipart/form-data;
+        """
         logger.debug('get_content')
         content = {}
         try:
@@ -108,13 +89,12 @@ class Request:
 
 
 class Response:
-    def __init__(self, status, reason, headers=None, body=None, rcookies=None, cookies_modyficate=False):
+    def __init__(self, status, reason, rcookies, headers=None, body=None):
         self.status = status
         self.reason = reason
         self.headers = headers
         self.body = body
         self.rcookies = rcookies
-        self.cookies_modyficate = cookies_modyficate
 
 
 class Server:
@@ -151,6 +131,9 @@ class Server:
             serv_sock.close()
 
     def server_client(self, conn, cid):
+        """
+        Основные клиент-серверные взаимодействия;
+        """
         try:
             logger.debug(f'create connect in server_client {cid}')
             req = self.parse_request(conn)
@@ -166,20 +149,21 @@ class Server:
             conn.close()
 
     def parse_request(self, conn):
+        """
+        Глобально ф-я парсит заголовок запроса и заполняет объект Request;
+
+        Но также отрабатывает обработчик кукисов:
+        Переменная rcookies принимает class Cookies;
+        В class Cookies кладутся кукисы из заголовка:
+        headers.get('Cookie') -> csrftoken=op9bz4JTvT5LG58t2kwA6rvctrbbA6gk; auth_key=asdf12334; any_key=123355
+        rcookies кладется в объект Request и передается дальше;
+        """
         rfile = conn.makefile('rb')
         method, target, ver = self.parse_request_line(rfile)
         headers = self.parse_headers(rfile)
         logger.debug(headers)
         host = headers.get('Host')
-        """
-        Cookies
-        1.
-        В переменную rcookies кладется str(массив) с токеном киента 
-        и всеми имеющимися куками сервиса 
-        пример:
-        csrftoken=op9bz4JTvT5LLHjv0FSNsXMWGgNS4aHG58t2kwA6rvctrbbA6gk; auth_key=asdf12334
-        """
-        rcookies = headers.get('Cookie')
+        rcookies = Cookies(cookies=headers.get('Cookie'))
         if not host:
             raise HTTPError(400, 'Bad request',
                             'Host header is missing')
@@ -188,14 +172,7 @@ class Server:
                             f"can not handle {method} request")
         # if host not in (self._server_name,
         #                 f'{self._server_name}:{self._port}'):
-        #     print('тут мб ошибка')
         #     raise HTTPError(404, 'Not found')
-        """
-        Cookies
-        2. Переменная rcookies кладется в объект Request, чтобы внутренний клиент фреймворка мог
-        ориентировать логику, например авторизации на контроллере, как частный случай и для отладки
-        
-        """
         return Request(method=method,
                        target=target,
                        version=ver,
@@ -231,45 +208,22 @@ class Server:
 
             if line in (b'\r\n', b'\n', b''):
                 break
-            print(type(line))
             headers.append(line)
             if len(headers) > MAX_HEADERS:
                 logger.debug(f"req_line {headers}")
                 raise HTTPError(494, 'Too many headers')
-        # print(SimpleCookie().value_encode(headers))
 
         sheaders = b''.join(headers).decode('iso-8859-1')
         return Parser().parsestr(sheaders)
 
     def handle_request(self, req):
         """
-        Cookies
-        3.Здесь я, как внутренний клиент, вызвавший объект request, могу постучаться
-        в него и взаимодействовать с атрибутом req.rcookies, обогощая его
-        на текущий момент обязательно под формат headers, где это массив тюплов.
-        пример из контроллера:
-        request.rcookies = [
-                ('Set-cookie', 'auth_key=asdf12334'),
-                ('Set-cookie', 'any_key=123355; Domain=example.com; Expires=Thu, 12-Jan-2017 13:55:08 GMT; Path=/'')
-                ]
-
-        Необходимо учитывать, что в объекте req.rcookies до обогащения изначально лежит
-        неразделенная строка, преподалагется реализация некого метода, который будет
-        валидировать и принимать решения
-
-        На текущий момент для принятия решения есть булевый флаг у объектов Response и Request,
-        который изменяется на контроллере
-        пример:
-        request.cookies_modyficate = True
-
-        этот фллаг в send_response запустит перебор объектов кукисов по аналогии,
-        как перебираются заголовки
+        В ф-ю возвращается контент сервиса;
+        На стороне контроллера можно произвести также взаимодействия с кукисами;
+        Подгатавливаются заголовки;
+        Возвращает объект Response;
         """
         body = self.response(path=req.path, method=req.method, request=req)
-        """
-        Cookies
-        4.объявляем rcookies для объекта Response
-        """
         rcookies = req.rcookies
         body = body.encode('utf-8')
         contentType = 'text/html; charset=utf-8'
@@ -284,11 +238,16 @@ class Server:
             headers=headers,
             body=body,
             rcookies=rcookies,
-            cookies_modyficate=req.cookies_modyficate
         )
         return resp
 
     def send_response(self, conn, resp):
+        """
+        Если внутренний клиент фреймворка что-либо кладет в кукисы -
+        request.rcookies.cookies = [('Set-cookie', 'some_key=123355')]
+        Если булевй флаг выставлен в True - request.rcookies.set_cookies = True
+        Помимо ответа с контентом будет произведена запись кукисов в бразузер;
+        """
         wfile = conn.makefile('wb')
         status_line = f'HTTP/1.1 {resp.status} {resp.reason}\r\n'
         logger.debug(f"status_line response {status_line}")
@@ -298,12 +257,9 @@ class Server:
             for (key, value) in resp.headers:
                 header_line = f'{key}: {value}\r\n'
                 wfile.write(header_line.encode('iso-8859-1'))
-        """
-        Повтор инструкции:
-        Cookies
-        5. Если внутренний клиент фреймворка что-либо кладет в кукисы, для отправки на клиента нужно заполнить флаг"""
-        if resp.cookies_modyficate:
-            for (key, value) in resp.rcookies:
+
+        if resp.rcookies.set_cookies:
+            for (key, value) in resp.rcookies.cookies:
                 header_line = f'{key}: {value}\r\n'
                 wfile.write(header_line.encode('iso-8859-1'))
 
@@ -316,6 +272,9 @@ class Server:
         wfile.close()
 
     def response(self, path, method, request):
+        """
+        Читает json с маршрутами и запускает ф-ю на контроллере;
+        """
         key_func = f'{method} {path}'
         with open('path.json', 'r') as outfile:
             rout = json.load(outfile)

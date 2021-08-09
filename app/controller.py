@@ -9,27 +9,6 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
 
-def _parse_cookies(cookie_str, dictionary) -> dict:
-    # оставил на будущее
-    """Tries to parse any key-value pairs of cookies in a string,
-    then updates the the dictionary with any key-value pairs found.
-
-    **Example**::
-        dictionary = {}
-        _parse_cookies('my=value', dictionary)
-        # Now the following is True
-        dictionary['my'] == 'value'
-
-    :param cookie_str: A string containing "key=value" pairs from an HTTP "Set-Cookie" header.
-    :type cookie_str: ``str``
-    :param dictionary: A dictionary to update with any found key-value pairs.
-    :type dictionary: ``dict``
-    """
-    parsed_cookie = SimpleCookie(cookie_str)
-    for cookie in parsed_cookie.values():
-        dictionary[cookie.key] = cookie.coded_value
-    return dictionary
-
 def add_users(flow):
     row = Users()
     row['name'] = flow['name']
@@ -85,9 +64,13 @@ def auth(request):
     Если их там нет, модифицирую булевый флаг
     обновляю атрибут request.rcookies 
     """
-    if 'any_key=123355' not in request.rcookies:
-        request.cookies_modyficate = True
-        request.rcookies = [('Set-cookie', 'any_key=123355')]
+    print(f'obj in route {request.rcookies}')
+    request.rcookies.set_cookies = False
+    if 'some_key=123355' not in request.rcookies.cookies:
+        request.rcookies.set_cookies = True
+        # request.cookies_modyficate = True
+        print(f'in route {request.rcookies.cookies}')
+        request.rcookies.cookies = [('Set-cookie', 'some_key=123355')]
 
 
 
