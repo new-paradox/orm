@@ -1,5 +1,11 @@
 from functools import wraps
 import json
+from jinja2 import Environment, FileSystemLoader
+from config import TEMPLATES
+import logging
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.DEBUG)
 
 
 class Routes:
@@ -24,3 +30,15 @@ def route(method, path):
         return func
 
     return decorator
+
+
+def render(html_file):
+    logger.debug(f"try render {html_file} from {TEMPLATES}")
+    env = Environment(loader=FileSystemLoader(TEMPLATES))
+    template = env.get_template(html_file)
+    output_from_parsed_template = template.render()
+    return output_from_parsed_template
+
+
+
+# render('login.html')
