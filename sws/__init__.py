@@ -38,7 +38,3 @@ def render(html_file):
     template = env.get_template(html_file)
     output_from_parsed_template = template.render()
     return output_from_parsed_template
-
-
-
-# render('login.html')

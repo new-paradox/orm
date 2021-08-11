@@ -3,11 +3,10 @@ import json
 import logging
 from email.parser import Parser
 from functools import lru_cache
-from http.cookies import SimpleCookie
+from http import cookies
 from urllib.parse import parse_qs, urlparse
 from app import controller
 import threading
-import app.templates
 import socket
 
 MAX_LINE = 64 * 1024
@@ -52,7 +51,7 @@ class Request:
     @property
     def get_content(self):
         """
-        Возвращает только параметры из multipart/form-data;
+        Возвращает параметры только из multipart/form-data;
         """
         logger.debug('get_content')
         content = {}

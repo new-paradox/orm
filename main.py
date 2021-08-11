@@ -2,6 +2,7 @@
 
 # @route("POST", "/new_article")
 from models.Article import Article
+from models.users import Users
 from orm_core.Conditions import QFilter
 
 
@@ -59,6 +60,17 @@ def read_by_one_id(model_id):
     return row.read_by_one_id(model_id=model_id)
 
 
+def get_user(condition):
+    """
+
+    :param condition: (QFilter().add_k('description').eq().add_v('foo').q_or().add_k('id').ne().add_v(1).condition)
+    """
+
+    row = Users()
+    row.condition = condition
+    return row.read()
+
+
 if __name__ == '__main__':
     """
     Обязательный import:
@@ -96,4 +108,5 @@ if __name__ == '__main__':
     $ python make_query.py -Q 'SELECT * FROM avail.articles;'
     
     """
-    print(read_by_one_id(45))
+    # username = 'sffsf'
+    # print(get_user(get_user(QFilter.add_k('username').eq().add_v(username))))
