@@ -107,5 +107,3 @@ if __name__ == '__main__':
     $ python make_query.py -Q 'SELECT * FROM avail.articles;'
     
     """
-    # username = 'sffsf'
-    # print(get_user(get_user(QFilter.add_k('username').eq().add_v(username))))
