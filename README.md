@@ -1,7 +1,9 @@
 Реализована ORM с CRUD операциями поддерживающая работу с:
-  - MySQL
-  - PostgreSQL
-  - sqlite3
+  1. MySQL
+  2. PostgreSQL
+  3. sqlite3
+
+
 
 - Необходимо создать и заполнить:
 ```python
