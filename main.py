@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-# @route("POST", "/new_article")
 from models.Article import Article
 from models.users import Users
 from orm_core.Conditions import QFilter
