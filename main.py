@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from models.Article import Article
-from models.users import Users
 from orm_core.Conditions import QFilter
 
 
