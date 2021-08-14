@@ -20,6 +20,7 @@ class QFilter:
 
     В конце условия обязательно .condition
     """
+
     def __init__(self):
         self.condition = ''
 
