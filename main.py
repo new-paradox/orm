@@ -58,17 +58,6 @@ def read_by_one_id(model_id):
     return article.read_by_one_id(model_id=model_id)
 
 
-def get_user(condition):
-    """
-
-    :param condition: (QFilter().add_k('description').eq().add_v('foo').q_or().add_k('id').ne().add_v(1).condition)
-    """
-
-    article = Users()
-    article.condition = condition
-    return article.read()
-
-
 if __name__ == '__main__':
     """
     Обязательный import:
