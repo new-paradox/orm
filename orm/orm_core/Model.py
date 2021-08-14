@@ -17,19 +17,23 @@ class Model:
     :method make_query: создание запроса из терминала;
     """
     _table_name = str
-    keys = []
-    Values = []
+    _row = {}
+
     condition = None
     set_update = None
     _cursor = DRIVER.connection.cursor()
 
     def __setitem__(self, key, value):
-        self.keys.append(key)
-        self.Values.append(value)
+        self._row[key] = value
 
     def create(self):
-        prepare_key = f"({', '.join(self.keys)})"
-        prepare_values = str(tuple(self.Values))
+        keys = []
+        values = []
+        for key, value in self._row:
+            keys.append(key)
+            values.append(value)
+        prepare_key = f"({', '.join(keys)})"
+        prepare_values = str(tuple(values))
         query = f"INSERT INTO {self._table_name.lower()} {prepare_key} VALUES {prepare_values};"
         print(query)
         return self._cursor.execute(query)

@@ -17,6 +17,8 @@ class QFilter:
     Условия собираются последовательным вызовом методов:
 
     QFilter().add_k('title').eq().add_v('AARRRGH').condition
+
+    В конце условия обязательно .condition
     """
     def __init__(self):
         self.condition = ''

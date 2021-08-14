@@ -100,11 +100,12 @@ class AutoDBConfigManager(BaseDBConfig, metaclass=Singleton):
             self.user = config.USER
             self.password = config.PASSWORD
             self.database = config.DATABASE
-            data = {"host": self.host,
-                    "user": self.user,
-                    "password": self.password,
-                    "database": self.database
-                    }
+            data = {
+                "host": self.host,
+                "user": self.user,
+                "password": self.password,
+                "database": self.database
+            }
             self._connection = get_driver(self.db_driver).value(data).connection
         except (pymysql.Error, psycopg2.Error, ValueError) as err:
             print(f'Error from db controller {err}')

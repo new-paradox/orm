@@ -18,7 +18,7 @@ config.py.default.py
 
 В директории models создается структура таблицы:
 ```python
-class SomeTable(Model):
+class Article(Model):
     _table_name = "some_table"
     id: int 
     title: str 
@@ -29,55 +29,55 @@ class SomeTable(Model):
 
 - В директории проекта описываются необходимые для API взаимодействия с таблицей:
 ```python
-from models.Article import SomeTable
+from models.Article import Article
 from orm_core.Conditions import QFilter
 
 def add_some_table(flow):
-    row = SomeTable()
-    row['id'] = flow['id']
-    row['title'] = flow['title']
-    row['description'] = flow['description']
-    row['content'] = flow['content']
-    row.create()
+    article = Article()
+    article['id'] = flow['id']
+    article['title'] = flow['title']
+    article['description'] = flow['description']
+    article['content'] = flow['content']
+    article.create()
 
 
 def get_article(condition):
-    row = SomeTable()
-    row.condition = condition
-    return row.read()
+    article = Article()
+    article.condition = condition
+    return article.read()
     
 
 def delete_article(condition):
-    row = SomeTable()
-    row.condition = condition
-    row.delete()
+    article = Article()
+    article.condition = condition
+    article.delete()
 
 def update_article(set_update, condition):
-    row = SomeTable()
-    row.set_update = set_update
-    row.condition = condition
-    row.update()
+    article = Article()
+    article.set_update = set_update
+    article.condition = condition
+    article.update()
 
 def read_by_one_id(model_id):
-    row = SomeTable()
-    return row.read_by_one_id(model_id=model_id)
+    article = Article()
+    return article.read_by_one_id(model_id=model_id)
 ```
 
 
 Пример взаимодействия с таблицей:
 ```python
-# SELECT
-get_article(QFilter().add_k('description').eq().add_v('foo').q_or().add_k('id').ne().add_v(1).condition)
-# INSERT
+# Create
 flow = {'id': 45, 'content': 'FOO'} 
 add_some_table(flow)
-# UPDATE
+# Read
+get_article(QFilter().add_k('description').eq().add_v('foo').q_or().add_k('id').ne().add_v(1).condition)
+# Update
 update_article(set_update=QFilter().add_k('title').eq().add_v('AARRRGH').condition,
                    condition=QFilter().add_k('id').eq().add_v(45).condition)
-# DELETE
+# Delete
 delete_article(condition=QFilter().add_k('id').eq().add_v(1).condition)
 
-# Пример SELECT запроса с запросом id строки:
+# Пример запроса по id:
 read_by_one_id(45)
 ```
 Создание запроса из терминала:
