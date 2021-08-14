@@ -27,4 +27,3 @@ ANSWER_5 = "id <= 5 OR id >= 1"
 def test_fill_cards_from_field(response, answer):
     result = response
     assert result == answer
-
