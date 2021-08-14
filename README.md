@@ -32,7 +32,7 @@ class Article(Model):
 from models.Article import Article
 from orm_core.Conditions import QFilter
 
-def add_some_table(flow):
+def add_article(flow):
     article = Article()
     article['id'] = flow['id']
     article['title'] = flow['title']
