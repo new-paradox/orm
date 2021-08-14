@@ -46,7 +46,6 @@ def get_article(condition):
     article.condition = condition
     return article.read()
     
-
 def delete_article(condition):
     article = Article()
     article.condition = condition
