@@ -29,7 +29,7 @@ class Model:
     def create(self):
         keys = []
         values = []
-        for key, value in self._row:
+        for key, value in self._row.items():
             keys.append(key)
             values.append(value)
         prepare_key = f"({', '.join(keys)})"
