@@ -82,5 +82,5 @@ read_by_one_id(45)
 ```
 Создание запроса из терминала:
 ```
-$ python make_query.py -Q 'SELECT * FROM name_db.some_table;'
+$ python make_query.py -Q 'SELECT * FROM name_db.some_table;
 ```
